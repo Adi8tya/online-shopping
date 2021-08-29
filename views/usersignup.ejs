@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <%- include('headerfiles') %>
+</head>
+
+<body>
+    <div class="container">
+        <h2>User Signup</h2>
+        <div class="row">
+            <div class="col-sm-6 offset-sm-3">
+                <form id="formsignup">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" data-rule-required="true" class="form-control">
+                        <div id="emailerror"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" id="password" data-rule-required="true"
+                            class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmpassword">Confirm Password</label>
+                        <input type="password" name="confirmpassword" id="confirmpassword" data-rule-required="true"
+                            data-rule-equalto="#password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" id="name" data-rule-required="true" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <input type="radio" name="gender" checked id="male" value="Male"> Male
+                        <input type="radio" name="gender" id="female" value="Female"> Female
+                    </div>
+                    <div class="form-group">
+                        <label for="mobileno">Mobile No</label>
+                        <input type="text" name="mobileno" id="mobileno" data-rule-required="true"
+                            data-rule-number="true" minlength="10" maxlength="10" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <textarea name="address" id="address" data-rule-required="true" class="form-control"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="photo">Photo</label>
+                        <input type="file" name="photo" id="photo" class="form-control-file">
+                    </div>
+                    <div class="form-group">
+                        <input type="button" value="Submit" id="userSignup" onclick="user_signup()"
+                            class="btn btn-primary">
+                    </div>
+
+                    <div class="form-group" id="error">
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        function user_signup() {
+            $("#formsignup").validate();
+            if ($("#formsignup").valid()) {
+                let formData = new FormData();
+                let controls = document.getElementById("formsignup").elements;
+                for (let i = 0; i < controls.length; i++) {
+                    if (controls[i].type == 'radio') {
+                        if (controls[i].checked) {
+                            formData.append(controls[i].name, controls[i].value);
+                        }
+                    } else if (controls[i].type == 'file') {
+                        formData.append(controls[i].name, controls[i].files[0]);
+                    } else {
+                        formData.append(controls[i].name, controls[i].value);
+                    }
+
+                }
+
+
+                document.getElementById("error").innerHTML = "";
+                document.getElementById("emailerror").innerHTML = "";
+                document.getElementById("emailerror").className = "";
+
+                let httpReq = new XMLHttpRequest();
+                httpReq.onreadystatechange = function () {
+                    if (this.status == 200 && this.readyState == 4) {
+                        if (this.response == "duplicate") {
+
+                            document.getElementById("emailerror").innerHTML = "<strong>Email Already Exist</strong>";
+                            document.getElementById("emailerror").className = "alert alert-warning";
+                        } else {
+                            document.getElementById("error").innerHTML = "<div class='alert alert-success'>Signup Success</div>"
+                        }
+                    }
+                }
+
+
+                httpReq.open("post", "./signupaction", true);
+                httpReq.send(formData);
+
+            }
+
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Admin Login</title>
+    <%- include('headerfiles') %>
+</head>
+<body>
+<%- include('publicheader') %>
+<div class="container">
+
+    <div class="row">
+        <div class="col-sm-6 offset-sm-3">
+            <form id="adminlogin">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username" data-rule-required="true" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" data-rule-required="true" class="form-control">
+                </div>
+                <div class="form-group">
+                    <!--                    <input type="button" value="Login" onclick="adminLogin()" class="btn btn-primary">-->
+                    <input type="button" value="Login" id="adminloginbtn" class="btn btn-primary">
+                </div>
+                <div class="form-group" id="error">
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    // function adminLogin() {
+    //
+    //
+    //
+    // }
+
+    $(document).ready(function () {
+        $("#adminloginbtn").click(function () {
+            $("#adminlogin").validate();
+            if ($("#adminlogin").validate()) {
+                var formdata = new FormData();
+                formdata.append("username", document.getElementById("username").value);
+                formdata.append("password", document.getElementById("password").value);
+                var httpreq = new XMLHttpRequest();
+                httpreq.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        if (this.response == "failed") {
+                            document.getElementById("error").innerHTML = "<div class='alert alert-danger'>Incorrect Username Or Password</div>";
+                        } else {
+                            document.getElementById("error").innerHTML = "<div class='alert alert-success'>Login success</div>";
+
+                            window.location.assign("/admin/adminHome")
+
+                        }
+
+                    } else {
+                        document.getElementById("adminlogin").value = "sending...";
+                    }
+
+
+                }
+
+                httpreq.open("post", "./adminLoginaction", true);
+                httpreq.send(formdata);
+
+
+            }
+        })
+    })
+</script>
+
+</body>
+</html>

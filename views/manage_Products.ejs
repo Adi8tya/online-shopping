@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <%- include('headerfiles') %>
+
+
+</head>
+<body>
+<div class="container">
+    <h2>Manage Products</h2>
+
+    <i class="fa fa-plus-circle text-success fa-3x" style="cursor: pointer" onclick="showmodal('Add Product','')"></i>
+
+
+    <div class="table-responsive" id="productTable">
+
+    </div>
+
+    <div class="modal fade" id="productAddModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal_header">New Product</h2>
+                </div>
+                <div class="modal-body">
+                    <form id="addproduct" class="validate-form">
+                        <div class="form-group">
+                            <label for="category">Select Category</label>
+                            <select name="category" id="category" class="form-control"
+                                    onchange="getSubCategories(this.value,'')">
+
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="subcategory">Select SubCategory</label>
+                            <select name="subcategory" id="subcategory" class="form-control">
+
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="productname">ProductName</label>
+                            <input type="text" name="productname" class="form-control" id="productname">
+                        </div>
+                        <div class="form-group">
+                            <label for="price">Price</label>
+                            <input type="number" name="price" class="form-control" id="price">
+                        </div>
+                        <div class="form-group">
+                            <label for="discount">Discount</label>
+                            <input type="number" name="discount" class="form-control" id="discount">
+                        </div>
+                        <div class="form-group">
+                            <label for="photo">Photo</label>
+                            <input type="file" name="photo" class="form-control" id="photo">
+                            <img src="" alt="" id="img1" style="height: 80px">
+                        </div>
+                        <div class="form-group">
+                            <input type="button" value="Add Product" onclick="saveProduct()" id="btn1"
+                                   class="btn btn-primary">
+                            <input type="hidden" name="action" id="action" value="add">
+                            <input type="hidden" name="productid" id="productid" value="">
+                            <div id="output"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <strong class="close" data-dismiss="modal">close</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    var dataProducts = [];
+
+    function getCategories() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var categories = JSON.parse(this.response)
+                let options = "<option value=''>Select Category</option>";
+                for (let i = 0; i < categories.length; i++) {
+                    options += "<option value='" + categories[i].categoryname + "'>" + categories[i].categoryname + "</option>";
+                }
+                console.log(options);
+                document.getElementById("category").innerHTML = options;
+            }
+        }
+
+        httpRequest.open('get', './getcategories', true);
+        httpRequest.send();
+
+
+    }
+
+    function getSubCategories(categoryname, subcategoryid) {
+
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                var subcategories = JSON.parse(this.response)
+                let options = "<option value=''>Select SubCategory</option>";
+                for (let i = 0; i < subcategories.length; i++) {
+
+                    if (subcategoryid == subcategories[i].subcategoryid) {
+                        options += "<option selected value='" + subcategories[i].subcategoryid + "'>" + subcategories[i].subcategoryname + "</option>";
+                    } else {
+                        options += "<option value='" + subcategories[i].subcategoryid + "'>" + subcategories[i].subcategoryname + "</option>";
+
+                    }
+                }
+                console.log(options);
+                document.getElementById("subcategory").innerHTML = options;
+            }
+        }
+
+        httpRequest.open('get', './getSubcategories?categoryname=' + categoryname, true);
+        httpRequest.send();
+
+
+    }
+
+    function saveProduct() {
+        // alert()
+        $(".validate-form").validate();
+        if ($(".validate-form").valid()) {
+
+            let formdata = new FormData();
+            let FormControls = document.getElementById("addproduct").elements;
+            console.log(FormControls.length);
+            for (let i = 0; i < FormControls.length; i++) {
+
+                if (FormControls[i].type != 'button') {
+
+                    if (FormControls[i].type == 'file') {
+                        formdata.append(FormControls[i].name, FormControls[i].files[0])
+                    } else {
+                        formdata.append(FormControls[i].name, FormControls[i].value)
+                    }
+
+                }
+            }
+
+
+            let httpRequest = new XMLHttpRequest();
+            httpRequest.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    if (this.response === "success") {
+                        document.getElementById('output').innerHTML =
+                            "<div class='alert alert-success'>Product Added</div>";
+                        document.getElementById("addproduct").reset();
+                        getProducts();
+
+                    } else {
+                        document.getElementById('output').innerHTML =
+                            "<div class='alert alert-danger'>Error</div>";
+                    }
+                    document.getElementById("btn1").innerHTML = "Submit";
+                } else {
+                    document.getElementById("btn1").innerHTML = "<span>sending...</span>";
+                }
+            }
+
+            httpRequest.open('post', './saveproducts', true);
+            httpRequest.send(formdata);
+
+
+        }
+
+    }
+
+    function deleteProduct(productId) {
+        if (confirm('are you sure to delete ?')) {
+
+            let httpRequest = new XMLHttpRequest();
+            httpRequest.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    if (this.response == "success") {
+                        alert("product deleted")
+                        getProducts();
+                    } else {
+                        alert(this.response);
+                    }
+                }
+            }
+
+            httpRequest.open('get', './deleteProduct?productid=' + productId, true);
+            httpRequest.send();
+
+
+        }
+    }
+
+    function getProducts() {
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+
+                dataProducts = JSON.parse(this.response);
+                if (dataProducts.length > 0) {
+                    let tab = `<table class='table table-bordered'>
+                                                   <thead><tr>
+                                                   <th>Srno</th>
+                                                   <th>ProductName</th>
+                                                   <th>Price</th>
+                                                   <th>Discount</th>
+                                                   <th>Photo</th>
+                                                   <th>CategoryName</th>
+                                                   <th>SubCategoryName</th>
+                                                <th colspan="2">Controls</th>
+                                                   </tr></thead>
+                                                   <tbody>`;
+
+                    for (let i = 0; i < dataProducts.length; i++) {
+                        let srno = i + 1;
+                        tab += `<tr>
+<td>${srno}</td>
+<td>${dataProducts[i].productname}</td>
+<td>${dataProducts[i].price}</td>
+<td>${dataProducts[i].discount}</td>
+<td><img src="../${dataProducts[i].product_photo}" alt="" style="height: 80px;"></td>
+<td>${dataProducts[i].categoryname}</td>
+<td>${dataProducts[i].subcategoryname}</td>
+<td><button type="button" class="btn btn-danger" onclick="deleteProduct('${dataProducts[i].productid}')"> <i class="fas fa-trash-alt"></i></button></td>
+<td><button type="button" class="btn btn-warning" onclick="showmodal('Edit Product','${dataProducts[i].productid}')"> <i class="fas fa-edit"></i></button></td>
+</tr>`;
+                    }
+                    tab += `</tbody></table>`;
+
+                    console.log(this.response)
+                    document.getElementById("productTable").innerHTML = tab;
+
+                } else {
+                    document.getElementById("productTable").innerHTML = "<div class='alert alert-danger'>No record Found</div>";
+                }
+
+            } else {
+                document.getElementById("productTable").innerHTML = "<span class='spinner-grow'></span>";
+            }
+        }
+
+        httpRequest.open('get', './getProducts', true);
+        httpRequest.send();
+
+    }
+
+    function showmodal(modalheading, productid) {
+        document.getElementById("modal_header").innerText = modalheading;
+        $('#productAddModal').modal('show');
+
+        if (modalheading.toLowerCase().indexOf('edit') != -1) {
+            document.getElementById("action").value = "edit";
+            document.getElementById("btn1").value = "Update";
+        } else {
+            document.getElementById("action").value = "add";
+            document.getElementById("btn1").value = "Submit";
+
+        }
+
+        if (productid != '') {
+            alert(dataProducts.length)
+
+            for (let i = 0; i < dataProducts.length; i++) {
+                if (dataProducts[i].productid == productid) {
+
+                    console.log(dataProducts[i])
+                    document.getElementById("productname").value = dataProducts[i].productname;
+                    document.getElementById("price").value = dataProducts[i].price;
+                    document.getElementById("discount").value = dataProducts[i].discount;
+
+                    document.getElementById("img1").src = "../" + dataProducts[i].product_photo;
+                    document.getElementById("category").value = dataProducts[i].categoryname;
+                    getSubCategories(dataProducts[i].categoryname, dataProducts[i].subcategoryid);
+                    // document.getElementById("subcategory").value = dataProducts[i].subcategoryid;
+                    document.getElementById("productid").value = dataProducts[i].productid;
+
+
+                    break;
+                }
+
+            }
+
+        }
+
+
+    }
+
+    $(document).ready(function () {
+        // alert()
+        getCategories();
+        getProducts();
+    })
+</script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Home Page</title>
+
+    <%- include('headerfiles') %>
+</head>
+
+<body onload="getProducts()">
+
+    <%- include('publicheader') %>
+        <div class="container">
+
+            <h1> Latest Products</h1>
+            <div id="dataDiv">
+            </div>
+        </div>
+
+        <script>
+            function getProducts() {
+                let httpRequest = new XMLHttpRequest();
+                httpRequest.onreadystatechange = function () {
+                    if (this.readyState === 4 && this.status === 200) {
+
+                        dataProducts = JSON.parse(this.response);
+                        if (dataProducts.length > 0) {
+                            let tab = `<div class='row'>`;
+
+                            for (let i = 0; i < dataProducts.length; i++) {
+
+                                tab += `<div class='col-sm-6 col-md-4'>
+                                     <div class='cart-column'>
+                                    <img src="${dataProducts[i].product_photo}" alt="" style="height: 100px;">
+                                    <h4>${dataProducts[i].productname}</h2>`
+
+                                if (dataProducts[i].discount > 0) {
+                                    tab += ` <h5><del>${dataProducts[i].price}</del></h5>`
+                                }
+                                else {
+                                    tab += `<h5>${dataProducts[i].price}</h5>`
+                                }
+
+                                tab += `<p>${dataProducts[i].subcategoryname}</p>
+                                     <button type="button" class="btn btn-info">add to cart</button>
+                                    </div >
+
+                                </div > `;
+                            }
+                            tab += `</div >`;
+
+                            console.log(this.response);
+                            document.getElementById("dataDiv").innerHTML = tab;
+
+                        } else {
+                            document.getElementById("dataDiv").innerHTML = "<div class='alert alert-danger'>No record Found</div>";
+                        }
+
+                    } else {
+                        document.getElementById("dataDiv").innerHTML = "<span class='spinner-grow'></span>";
+                    }
+                }
+
+                httpRequest.open('get', './getProducts', true);
+                httpRequest.send();
+
+            }
+        </script>
+</body>
+
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <%- include('headerfiles') %>
+</head>
+
+<body>
+    <div class="container">
+        <h2>User Signup</h2>
+        <div class="row">
+            <div class="col-sm-6 offset-sm-3">
+                <form id="formlogin">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" data-rule-required="true" class="form-control">
+                        <div id="emailerror"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" id="password" data-rule-required="true"
+                            class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="button" value="Submit" id="userSignup" onclick="user_login()"
+                            class="btn btn-primary">
+                    </div>
+                    <div class="form-group" id="error">
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        function user_login() {
+            $("#formlogin").validate();
+            if ($("#formlogin").valid()) {
+                let formData = new FormData();
+                let controls = document.getElementById("formlogin").elements;
+                for (let i = 0; i < controls.length; i++) {
+                    if (controls[i].type == 'radio') {
+                        if (controls[i].checked) {
+                            formData.append(controls[i].name, controls[i].value);
+                        }
+                    } else if (controls[i].type == 'file') {
+                        formData.append(controls[i].name, controls[i].files[0]);
+                    } else {
+                        formData.append(controls[i].name, controls[i].value);
+                    }
+
+                }
+                document.getElementById("error").innerHTML = "";
+                document.getElementById("emailerror").innerHTML = "";
+                document.getElementById("emailerror").className = "";
+
+                let httpReq = new XMLHttpRequest();
+                httpReq.onreadystatechange = function () {
+                    if (this.status === 200 && this.readyState === 4) {
+                        if (this.response === "invalidemail") {
+
+                            document.getElementById("emailerror").innerHTML = "<strong>Email not Exist</strong>";
+                            document.getElementById("emailerror").className = "alert alert-warning";
+                        } else if (this.response === "success") {
+                            document.getElementById("error").innerHTML = "<div class='alert alert-success'>Login Success</div>"
+
+                            window.location.assign('./userhome')
+                        } else {
+                            document.getElementById("error").innerHTML = "<div class='alert alert-danger'>Invalid Passowrd</div>"
+                        }
+                    }
+                }
+
+
+                httpReq.open("post", "./loginaction", true);
+                httpReq.send(formData);
+
+            }
+
+        }
+    </script>
+</body>
+
+</html>
